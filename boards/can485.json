@@ -1,0 +1,20 @@
+{
+    "name": "CAN485",
+    "url": "https://github.com/Atlantis-Specialist-Technologies",
+    "vendor": "Atlantis Specialist Technologies",
+    
+    "build": {
+        "core": "arduino",
+        "f_cpu": "16000000L",
+        "mcu": "at90can128",
+        "variant": "Can485"
+    },
+    "frameworks": ["arduino"],
+    "platform": "atmelavr",
+    "upload": {
+        "maximum_size": 131072,
+        "maximum_ram_size": 4096,
+        "protocol": "stk500v2",
+        "speed": 115200
+    }
+}
