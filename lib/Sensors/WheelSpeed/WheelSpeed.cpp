@@ -14,13 +14,10 @@ void WheelSpeedSensor::init(uint8_t pin_num, void(*intFun)(), uint16_t id) {
     pin = pin_num;
     pinMode(pin, INPUT);
     attachInterrupt(digitalPinToInterrupt(pin), intFun, RISING);
-
-    tx_msg.pt_data = &tx_buffer[0];
-    tx_msg.ctrl.ide = MESSAGE_PROTOCOL;
-    tx_msg.id.ext = id;
-    tx_msg.dlc = MESSAGE_LENGTH;
+    msg.init(id);
 }
 
+/* Sends type uint32 scaled by 1000. Optimized to minimize interrupt close time */
 void WheelSpeedSensor::tx() {
     EIMSK &= ~(1 << digitalPinToInterrupt(pin));
 
@@ -31,9 +28,8 @@ void WheelSpeedSensor::tx() {
         reset_flag = true;
     }
     Serial.println(mph);
-    memcpy(&tx_buffer[0], &mph, sizeof(mph));
-    tx_msg.cmd = CMD_TX_DATA;
-    while (can_cmd(&tx_msg) != CAN_CMD_ACCEPTED);
-    while (can_get_status(&tx_msg) == CAN_STATUS_NOT_COMPLETED);
+    
+    msg.tx(&mph, sizeof(mph));
+
     EIMSK |= (1 << digitalPinToInterrupt(pin));
 }
