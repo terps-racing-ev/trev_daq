@@ -2,30 +2,28 @@
 #include "WheelSpeed.h"
 #include "LinearPot.h"
 
-WheelSpeedSensor flWSP;
-WheelSpeedSensor frWSP;
-LinearPotSensor flLP;
-LinearPotSensor frLP;
+WheelSpeed flWSP;
+WheelSpeed frWSP;
+LinearPot flLP;
+LinearPot frLP;
 
-void incflWSP() { flWSP.inc(); }
-void incfrWSP() { frWSP.inc(); }
+void incflWSP() { flWSP.intHandler(); }
+void incfrWSP() { frWSP.intHandler(); }
 
 void setup() {
-  canInit(500000);
-  Serial.begin(9600);
+    canInit(500000);
+    Serial.begin(9600);
 
-  pinMode(6, INPUT);
-  flWSP.init(6, incflWSP, 304);
-  //frWSP.init(7, incfrWSP, 301);
-  //flLP.init(A0, 404);
-  //frLP.init(A1, 401);
+    flWSP.init(6, 304, incflWSP);
+    frWSP.init(7, 301, incfrWSP);
+    flLP.init(A0, 404);
+    frLP.init(A1, 401);
 }
 
 void loop() {
-  flWSP.tx();
-  //frWSP.tx();
-  //flLP.tx();
-  //frLP.tx();
-  //Serial.println(digitalRead(6));
-  delay(1000);
+    flWSP.calculate();
+    frWSP.calculate();
+    flLP.calculate();
+    frLP.calculate();
+    delay(1000);
 }
