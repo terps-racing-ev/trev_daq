@@ -66,7 +66,6 @@ class CoolantTemp : public Sensor {
             273.15;
     Serial.println(tempC);
 
-    // TODO: Test that sprintf-ing the float and then tx-ing it works
     return tempC;
   }
 
@@ -75,6 +74,7 @@ class CoolantTemp : public Sensor {
     *buf = getTemp();
     sprintf(buf, "%f", tempC);
 
+    // TODO: Test that sprintf-ing the float and then tx-ing it works
     tx(&buf, sizeof(tempC));
     Serial.printf("Sensor temp: %f °C\n", tempC);
   }
