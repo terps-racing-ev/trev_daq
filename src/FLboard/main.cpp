@@ -25,5 +25,5 @@ void loop() {
     frWSP.calculate();
     flLP.calculate();
     frLP.calculate();
-    delay(1000);
+    delay(20);
 }

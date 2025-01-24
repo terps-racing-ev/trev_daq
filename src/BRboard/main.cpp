@@ -29,5 +29,5 @@ void loop() {
     c3.calculate();
     c4.calculate();
     flowmeter.calculate();
-    delay(50);
+    delay(500);
 }
