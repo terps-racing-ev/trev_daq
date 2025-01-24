@@ -47,6 +47,7 @@ public:
         EIMSK |= (1 << digitalPinToInterrupt(pin));
 
         tx(&mph, sizeof(mph));
+        // Serial.println("Transferred on CAN!");
     }
 };
 
