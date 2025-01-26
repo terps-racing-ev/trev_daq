@@ -21,9 +21,10 @@ void setup() {
 }
 
 void loop() {
-    blWSP.calculate();
-    brWSP.calculate();
-    blLP.calculate();
-    brLP.calculate();
-    delay(20);
+    //blWSP.calculate();
+    //brWSP.calculate();
+    //blLP.calculate();
+    //brLP.calculate();
+    Serial.println(digitalRead(6));
+    delay(100);
 }

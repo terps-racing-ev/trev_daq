@@ -24,10 +24,10 @@ void setup() {
 }
 
 void loop() {
-    c1.calculate();
-    c2.calculate();
-    c3.calculate();
-    c4.calculate();
+    //c1.calculate();
+    //c2.calculate();
+    //c3.calculate();
+    //c4.calculate();
     flowmeter.calculate();
     delay(500);
 }

@@ -8,7 +8,7 @@ class FlowMeter : public Sensor {
 
 private:
     volatile uint32_t count;
-    uint32_t rate;
+    float rate;
 
 public:
     FlowMeter() : count(0), rate(0) {}
@@ -20,12 +20,14 @@ public:
     void calculate() override {
         EIMSK &= ~(1 << digitalPinToInterrupt(pin));
 
-        rate = (count * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate in L/hour
+        rate = (count / 7.5); //Pulse frequency / 7.5Q, = flow rate in L/minute
+        
+        EIMSK |= (1 << digitalPinToInterrupt(pin));
+        
+        count = 0;
         Serial.println (rate);
         
         tx(&rate, sizeof(rate));
-
-        EIMSK |= (1 << digitalPinToInterrupt(pin));
     }
 };
 
