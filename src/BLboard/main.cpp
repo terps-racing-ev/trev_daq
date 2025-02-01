@@ -14,10 +14,11 @@ void setup() {
     canInit(500000);
     Serial.begin(9600);
 
-    blWSP.init(6, 304, incflWSP);
-    brWSP.init(7, 301, incfrWSP);
-    blLP.init(A0, 404);
-    brLP.init(A1, 401);
+    //blWSP.init(6, 304, incflWSP);
+    //brWSP.init(7, 301, incfrWSP);
+    //blLP.init(A0, 404);
+    //brLP.init(A1, 401);
+    pinMode(A0, INPUT);
 }
 
 void loop() {
@@ -25,6 +26,6 @@ void loop() {
     //brWSP.calculate();
     //blLP.calculate();
     //brLP.calculate();
-    Serial.println(digitalRead(6));
+    Serial.println(analogRead(A0));
     delay(100);
 }
