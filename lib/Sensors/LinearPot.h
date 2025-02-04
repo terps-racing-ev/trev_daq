@@ -26,8 +26,7 @@ public:
         sum = sum + x;
         idx = (idx + 1) % SIZE;
         avg = sum / SIZE;
-        avg = 24;
-        
+        Serial.println(avg);
         tx(&avg, sizeof(avg));
     }
 };

@@ -46,8 +46,8 @@ public:
         }
         EIMSK |= (1 << digitalPinToInterrupt(pin));
 
-        Serial.println(mph);
-        //tx(&mph, sizeof(mph));
+        //Serial.println(mph);
+        tx(&mph, sizeof(mph));
         
     }
 };
