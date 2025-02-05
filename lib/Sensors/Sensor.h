@@ -35,7 +35,7 @@ public:
         tx_msg.dlc = MESSAGE_LENGTH;
     }
 
-    virtual void calculate() = 0;  // Sensor-specific calculation logic
+    virtual float calculate() = 0;  // Sensor-specific calculation logic
 
     virtual void tx(const void* data, size_t size) {
         memcpy(tx_buffer, data, size > MESSAGE_LENGTH ? MESSAGE_LENGTH : size);
@@ -46,6 +46,11 @@ public:
     }
 
     virtual void intHandler() {}  // Optional interrupt handling
+
+    // Utility function to map with float
+    float mapFloat(float x, float in_min, float in_max, float out_min, float out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
 };
 
 #endif

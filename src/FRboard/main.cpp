@@ -1,14 +1,27 @@
 #include <Arduino.h>
+#include "BrakePressure.h"
+#include "PitotTube.h"
+#include "SteeringAngle.h"
 
+BrakePressure rBP;
+BrakePressure lBP;
+PitotTube pitot;
+SteeringAngle steering;
 
 void setup() {
-    //canInit(500000);
+    canInit(500000);
     Serial.begin(9600);
 
-    pinMode(A0, INPUT);
+    rBP.init(A0, 611);
+    lBP.init(A1, 612);
+    pitot.init(A2, 710);
+    steering.init(A3, 810);
 }
 
 void loop() {
-    Serial.println(analogRead(A0));
-    delay(100);
+    rBP.calculate();
+    lBP.calculate();
+    pitot.calculate();
+    steering.calculate();
+    delay(20);
 }

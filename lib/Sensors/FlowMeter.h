@@ -17,7 +17,7 @@ public:
         count++;
     }
 
-    void calculate() override {
+    float calculate() override {
         EIMSK &= ~(1 << digitalPinToInterrupt(pin));
 
         rate = (count / 7.5); //Pulse frequency / 7.5Q, = flow rate in L/minute
@@ -25,9 +25,9 @@ public:
         EIMSK |= (1 << digitalPinToInterrupt(pin));
         
         count = 0;
-        Serial.println (rate);
         
         tx(&rate, sizeof(rate));
+        return rate;
     }
 };
 

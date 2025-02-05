@@ -4,30 +4,32 @@
 #include <Arduino.h>
 #include "Sensor.h"
 
-#define SIZE 5
+#define NUM_READINGS 5
 #define MAX_RANGE 50
 
 class LinearPot : public Sensor {
 
 private:
-    int idx;
-    int sum;
-    int readings[SIZE];
-    int avg;
+    int readIdx;
+    float sum;
+    float readings[NUM_READINGS];
+    float avg;
 
 public:
-    LinearPot() : idx(0), sum(0), avg(0) {}
+    LinearPot() : readIdx(0), sum(0), avg(0) {
+        memset(readings, 0, sizeof(readings));
+    }
 
-    void calculate() override {
-        double a = analogRead(pin);
-        double x = MAX_RANGE * a/1023;
-        sum = sum - readings[idx];
-        readings[idx] = x;
-        sum = sum + x;
-        idx = (idx + 1) % SIZE;
-        avg = sum / SIZE;
-        Serial.println(avg);
+    // moving average
+    float calculate() override {
+        float dist = mapFloat(analogRead(pin), 0, 1023, 0, MAX_RANGE);
+        sum = sum - readings[readIdx];
+        readings[readIdx] = dist;
+        sum = sum + dist;
+        readIdx = (readIdx + 1) % NUM_READINGS;
+        avg = sum / NUM_READINGS;
         tx(&avg, sizeof(avg));
+        return avg;
     }
 };
 

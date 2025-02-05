@@ -7,15 +7,16 @@
 class BrakePressure : public Sensor {
 
 private:
+    float pressure = 0;
 
 public:
-    BrakePressure();
+    BrakePressure() : pressure(0) {};
     
-    void calculate() override {
-        double analogToVoltage = map(analogRead(pin), 0, 1024, 0, 5);
-        double pressure = map(analogToVoltage, 0, 4.5, 0, 3000);
-
+    float calculate() override {
+        float analogToVoltage = mapFloat(analogRead(pin), 0, 1024, 0, 5);
+        pressure = mapFloat(analogToVoltage, 0, 4.5, 0, 3000);
         tx(&pressure, sizeof(pressure));
+        return pressure;
     }
 };
 

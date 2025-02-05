@@ -11,7 +11,7 @@
 #define SCALED_MICROS_IN_HR 3600000 // scaled by 10^-3
 #define SCALED_HNTH_IN_IN_MILE 63360 // scaled by 10^-2
 
-// Final answer will be scaled by 10^3 -> 3 decimal places of accuracy
+// Answer will be scaled by 10^3 -> 3 decimal places of accuracy
 #define MASTER_CONST ((uint64_t(SCALED_MICROS_IN_HR) * 2 * SCALED_PI * ROLLING_RADIUS) / (SPOKES * SCALED_HNTH_IN_IN_MILE)) 
 
 class WheelSpeed : public Sensor {
@@ -35,7 +35,7 @@ public:
         }
     }
     
-    void calculate() override {
+    float calculate() override {
         EIMSK &= ~(1 << digitalPinToInterrupt(pin));
 
         uint32_t diff = end_time - start_time;
@@ -46,8 +46,9 @@ public:
         }
         EIMSK |= (1 << digitalPinToInterrupt(pin));
 
-        //Serial.println(mph);
-        tx(&mph, sizeof(mph));
+        float mphFloat = static_cast<float>(mph);
+        tx(&mphFloat, sizeof(mphFloat));
+        return mphFloat;
         
     }
 };

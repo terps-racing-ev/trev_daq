@@ -7,17 +7,15 @@
 class SteeringAngle : public Sensor {
 
 private:
-    int potValue;
     float angle;
 
 public:
-    SteeringAngle() : potValue(0), angle(0) {}
+    SteeringAngle() : angle(0) {}
 
-    void calculate() override {
-        potValue = analogRead(pin);
-        angle = map(potValue, 0, 1023, 0, 345);
-
+    float calculate() override {
+        angle = mapFloat(analogRead(pin), 0, 1023, 0, 345);
         tx(&angle, sizeof(angle));
+        return angle;
     }
 };
 

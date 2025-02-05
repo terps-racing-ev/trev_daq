@@ -1,29 +1,32 @@
 #include <Arduino.h>
-#include "WheelSpeed.h"
 #include "LinearPot.h"
+#include "WheelSpeed.h"
 
-WheelSpeed blWSP;
-WheelSpeed brWSP;
-LinearPot blLP;
+
 LinearPot brLP;
+LinearPot blLP;
+WheelSpeed brWSP;
+WheelSpeed blWSP;
 
-void incflWSP() { blWSP.intHandler(); }
-void incfrWSP() { brWSP.intHandler(); }
+
+void incbrWSP() { brWSP.intHandler(); }
+void incblWSP() { blWSP.intHandler(); }
 
 void setup() {
     canInit(500000);
     Serial.begin(9600);
 
-    blWSP.init(6, 303, incflWSP);
-    brWSP.init(7, 302, incfrWSP);
-    blLP.init(A0, 403);
-    brLP.init(A1, 402);
+    brLP.init(A0, 531);
+    blLP.init(A1, 532);
+    brWSP.init(6, 431, incbrWSP);
+    blWSP.init(7, 432, incbrWSP);
 }
 
 void loop() {
-    blWSP.calculate();
-    brWSP.calculate();
-    blLP.calculate();
     brLP.calculate();
-    delay(50);
+    blLP.calculate();
+    brWSP.calculate();
+    blWSP.calculate();
+    
+    delay(20);
 }
