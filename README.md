@@ -1,4 +1,7 @@
 # DAQ
+
+[Sensor Organization](https://umd0.sharepoint.com/:x:/s/TeamsTerpsRacingEV/Ef79KA5FaFhJh21jqTwfWeUBTny6eTJU5965LJCH_cuU6w?e=4OiMr1)
+
 ## Using Platformio
 - Platformio is essentially the Arduino interface but allows for much better file organization and version control
 - Install VSCode and the Platformio extension
