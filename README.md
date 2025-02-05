@@ -10,7 +10,7 @@
 - In the ```platformio.ini``` file, change ```src_dir = src/FRboard``` to the name of the folder of the board you want to upload. Use the misc folder for testing
 
 ## Code Structure
-- Each sensor has it's own header file
+- Each sensor is an object and has its own class
 - All sensors inherit the abstract class ```sensor.h```
   - void init(pin, CAN ID, Optional interrupt function)
   - float calculate()
