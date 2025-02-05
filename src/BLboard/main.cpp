@@ -1,10 +1,10 @@
 #include <Arduino.h>
-#include "LinearPot.h"
+#include "BrakePressure.h"
 #include "WheelSpeed.h"
 
 
-LinearPot brLP;
-LinearPot blLP;
+BrakePressure brBP;
+BrakePressure blBP;
 WheelSpeed brWSP;
 WheelSpeed blWSP;
 
@@ -16,15 +16,15 @@ void setup() {
     canInit(500000);
     Serial.begin(9600);
 
-    brLP.init(A0, 531);
-    blLP.init(A1, 532);
+    brBP.init(A0, 631);
+    blBP.init(A1, 632);
     brWSP.init(6, 431, incbrWSP);
     blWSP.init(7, 432, incbrWSP);
 }
 
 void loop() {
-    brLP.calculate();
-    blLP.calculate();
+    brBP.calculate();
+    blBP.calculate();
     brWSP.calculate();
     blWSP.calculate();
     
