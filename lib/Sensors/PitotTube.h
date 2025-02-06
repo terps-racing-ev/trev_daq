@@ -6,39 +6,36 @@
 
 class PitotTube : public Sensor {
 
-#define NUM_READINGS 20
-
 private:
-    float readings[NUM_READINGS];   // stores velocity values based on numReadings
-    int readIdx = 0;                // index of the current reading
-    float sum = 0;                  // sum of the last numReadings 
-    float avg = 0;                  // moving average of the readings
+    static constexpr uint16_t NUM_READINGS = 20;
+
+    uint16_t readings[NUM_READINGS];   // stores velocity values based on numReadings
+    uint16_t readIdx;                  // index of the current reading
+    uint32_t sum;                      // sum of the last numReadings 
 
 public:
-    PitotTube() : readIdx(0), sum(0), avg(0) {
+    PitotTube() : readIdx(0), sum(0) {
         memset(readings, 0, sizeof(readings));
     }
 
-    // moving average
-    float calculate() override {
-        float V = mapFloat(analogRead(pin), 0, 1023, 0, 5);
-        float kPa = V - 2.74;     //voltage ratio to pressure differential conversion
+    int16_t calculate() override {
+        int16_t mV = analogRead(pin) * 5000 / 1023;
+        int16_t Pa = mV - 2740;     //voltage to pressure differential conversion
  
-        float Pa = 1000 * kPa;      //convert to pascals
-        float vel = sqrt(abs(2*(Pa) / (1.225)))*2.23694;  //find velocity in mph
+        float vel = sqrt(abs(2.0 * Pa / 1.225)) * 2.23694;  //find velocity in mph
+        uint16_t vel_scaled = static_cast<uint16_t>(vel * 100);
 
         //implement moving average
         // Subtract the last reading from the total
         sum -= readings[readIdx];
         // Add reading 
-        readings[readIdx] = vel;
+        readings[readIdx] = vel_scaled;
         sum += readings[readIdx];
         // Next array position
         readIdx = (readIdx + 1) % NUM_READINGS;
 
-        avg = sum / NUM_READINGS;
-        tx(&avg, sizeof(avg));
-        return avg;
+        int16_t avg = sum / NUM_READINGS;
+        return avg; // Moving average of Velocity in MPH * 100
     }
 };
 

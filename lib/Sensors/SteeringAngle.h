@@ -7,15 +7,13 @@
 class SteeringAngle : public Sensor {
 
 private:
-    float angle;
 
 public:
-    SteeringAngle() : angle(0) {}
+    SteeringAngle() {}
 
-    float calculate() override {
-        angle = mapFloat(analogRead(pin), 0, 1023, 0, 345);
-        tx(&angle, sizeof(angle));
-        return angle;
+    int16_t calculate() override {
+        int16_t angle = analogRead(pin) * 3450 / 1023;
+        return angle; // Angle in Degrees * 10
     }
 };
 

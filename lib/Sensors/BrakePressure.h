@@ -7,16 +7,19 @@
 class BrakePressure : public Sensor {
 
 private:
-    float pressure = 0;
+    static constexpr uint16_t MIN_MV = 500; // Voltage cutoff in mV
+    static constexpr uint16_t MAX_MV = 4500;
+    static constexpr uint16_t MIN_PSI = 0;
+    static constexpr uint16_t MAX_PSI = 3000;
 
 public:
-    BrakePressure() : pressure(0) {};
+    BrakePressure() {};
     
-    float calculate() override {
-        float analogToVoltage = mapFloat(analogRead(pin), 0, 1024, 0, 5);
-        pressure = mapFloat(analogToVoltage, 0, 4.5, 0, 3000);
-        tx(&pressure, sizeof(pressure));
-        return pressure;
+    int16_t calculate() override {
+        int16_t mV = analogRead(pin) * 5000 / 1023;
+        int16_t psi = map(mV, MIN_MV, MAX_MV, MIN_PSI, MAX_PSI);
+
+        return psi;  // Pressure in PSI × 10
     }
 };
 

@@ -4,52 +4,67 @@
 #include <Arduino.h>
 #include "Sensor.h"
 
-#define ROLLING_RADIUS 900          // hundredths of inches
-#define SPOKES 16
-
-#define SCALED_PI 31416             // scaled by 10^4 to avoid floating point arithmetic
-#define SCALED_MICROS_IN_HR 3600000 // scaled by 10^-3
-#define SCALED_HNTH_IN_IN_MILE 63360 // scaled by 10^-2
-
-// Answer will be scaled by 10^3 -> 3 decimal places of accuracy
-#define MASTER_CONST ((uint64_t(SCALED_MICROS_IN_HR) * 2 * SCALED_PI * ROLLING_RADIUS) / (SPOKES * SCALED_HNTH_IN_IN_MILE)) 
-
 class WheelSpeed : public Sensor {
 
 private:
+    static constexpr uint16_t ROLLING_RADIUS = 900;  // Hundredths of inches
+    static constexpr uint8_t SPOKES = 16;
+
+    static constexpr uint32_t SCALED_PI = 31416;  // Scaled by 10^4
+    static constexpr uint64_t SCALED_MICROS_IN_HR = 3600000;  // Scaled by 10^-3
+    static constexpr uint32_t SCALED_HNTH_IN_IN_MILE = 63360;  // Scaled by 10^-2
+    static constexpr uint64_t MASTER_CONST = 
+        (SCALED_MICROS_IN_HR * 2 * SCALED_PI * ROLLING_RADIUS) 
+        / (SPOKES * SCALED_HNTH_IN_IN_MILE);
+
+    // Moving average parameters
+    static constexpr uint8_t NUM_READINGS = 5;
+    static constexpr uint16_t SPEED_HOLD_TIME = 200;  // Hold last speed for 200ms before resetting
+
+    volatile uint32_t lastPulseTime;
     volatile uint8_t count;
-    volatile uint32_t start_time;
-    volatile uint32_t end_time;
-    bool reset_flag;
+
+    uint16_t speedReadings[NUM_READINGS];  
+    uint8_t readIdx;
+    uint32_t speedSum;
+    uint16_t lastValidSpeed;
 
 public:
-    WheelSpeed() : count(0), start_time(0), end_time(0), reset_flag(false) {}
-    
-    void intHandler() override {
-        end_time = micros();
-        if (reset_flag) {
-            start_time = end_time;
-            reset_flag = false;
-        } else {
-            count++;
-        }
+    WheelSpeed() : lastPulseTime(0), count(0), readIdx(0), speedSum(0), lastValidSpeed(0) {
+        memset(speedReadings, 0, sizeof(speedReadings));
     }
     
-    float calculate() override {
-        EIMSK &= ~(1 << digitalPinToInterrupt(pin));
+    void intHandler() override {
+        uint32_t now = micros();
+        lastPulseTime = now;
+        count++;
+    }
+    
+    int16_t calculate() override {
+        uint32_t now = millis();
+        uint32_t diffMicros = micros() - lastPulseTime;
+        uint16_t mph_scaled = (diffMicros == 0) ? lastValidSpeed : (count * MASTER_CONST) / diffMicros;
 
-        uint32_t diff = end_time - start_time;
-        uint32_t mph = diff == 0 ? 0 : (count * MASTER_CONST) / diff;
         if (count > 1) {
             count = 0;
-            reset_flag = true;
         }
-        EIMSK |= (1 << digitalPinToInterrupt(pin));
 
-        float mphFloat = static_cast<float>(mph);
-        tx(&mphFloat, sizeof(mphFloat));
-        return mphFloat;
-        
+        // Moving Average
+        speedSum -= speedReadings[readIdx];  
+        speedReadings[readIdx] = mph_scaled;
+        speedSum += mph_scaled;  
+
+        readIdx = (readIdx + 1) % NUM_READINGS;  
+
+        // If no pulses but within hold time, retain last valid speed
+        if (mph_scaled > 0) {
+            lastValidSpeed = mph_scaled;
+        } else if (now - lastPulseTime >= SPEED_HOLD_TIME) {
+            lastValidSpeed = 0;  // Reset when timeout expires
+        }
+
+        int16_t avg = speedSum / NUM_READINGS;  
+        return avg;
     }
 };
 
