@@ -13,7 +13,7 @@ void incblWSP() { blWSP.intHandler(); }
 
 void setup() {
     canManagerInit(500000);
-    //Serial.begin(9600);
+    Serial.begin(9600);
 
     brBP.init(A0);
     blBP.init(A1);

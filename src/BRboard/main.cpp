@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "CanManager.h"
 #include "CoolantTemp.h"
 #include "FlowMeter.h"
 
@@ -12,15 +13,15 @@ FlowMeter flowmeter;
 void incflow() { flowmeter.intHandler(); }
 
 void setup() {
-    canInit(500000);
+    canManagerInit(500000);
     Serial.begin(9600);
 
-    c1.init(A0, 100);
-    c2.init(A1, 101);
-    c3.init(A2, 102);
-    c4.init(A3, 103);
+    c1.init(A0);
+    c2.init(A1);
+    c3.init(A2);
+    c4.init(A3);
 
-    flowmeter.init(6, 200, incflow);
+    flowmeter.init(6, incflow);
 }
 
 void loop() {
