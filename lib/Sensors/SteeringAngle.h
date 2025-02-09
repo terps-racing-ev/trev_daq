@@ -12,7 +12,7 @@ public:
     SteeringAngle() {}
 
     int16_t calculate() override {
-        int16_t angle = analogRead(pin) * 3450 / 1023;
+        int16_t angle = map(analogRead(pin), 0, 1023, 0, 3459);
         return angle; // Angle in Degrees * 10
     }
 };

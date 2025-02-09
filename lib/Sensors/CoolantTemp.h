@@ -17,7 +17,7 @@ public:
     CoolantTemp() {}
 
     int16_t calculate() override {
-        int16_t mV = analogRead(pin) * 5000 / 1023;
+        int16_t mV = map(analogRead(pin), 0, 1023, 0, 5000);
         float resistance = mV * RESISTOR_VAL / (5000 - mV);
 
         float tempC = pow((A + B * log(resistance) + C * pow(log(resistance), 3)), -1) - 273.15;

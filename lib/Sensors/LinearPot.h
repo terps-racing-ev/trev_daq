@@ -20,7 +20,7 @@ public:
     }
 
     int16_t calculate() override {
-        int16_t dist = analogRead(pin) * MAX_RANGE / 1023;
+        int16_t dist = map(analogRead(pin), 0, 1023, 0, MAX_RANGE);
         sum = sum - readings[readIdx];
         readings[readIdx] = dist;
         sum = sum + dist;

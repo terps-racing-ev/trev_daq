@@ -16,7 +16,7 @@ public:
     BrakePressure() {};
     
     int16_t calculate() override {
-        int16_t mV = analogRead(pin) * 5000 / 1023;
+        int16_t mV = map(analogRead(pin), 0, 1023, 0, 5000);
         int16_t psi = map(mV, MIN_MV, MAX_MV, MIN_PSI, MAX_PSI);
 
         return psi;  // Pressure in PSI × 10

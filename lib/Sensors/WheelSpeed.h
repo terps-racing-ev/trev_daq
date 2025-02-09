@@ -9,62 +9,51 @@ class WheelSpeed : public Sensor {
 private:
     static constexpr uint16_t ROLLING_RADIUS = 900;  // Hundredths of inches
     static constexpr uint8_t SPOKES = 16;
-
-    static constexpr uint32_t SCALED_PI = 31416;  // Scaled by 10^4
-    static constexpr uint64_t SCALED_MICROS_IN_HR = 3600000;  // Scaled by 10^-3
-    static constexpr uint32_t SCALED_HNTH_IN_IN_MILE = 63360;  // Scaled by 10^-2
-    static constexpr uint64_t MASTER_CONST = 
-        (SCALED_MICROS_IN_HR * 2 * SCALED_PI * ROLLING_RADIUS) 
-        / (SPOKES * SCALED_HNTH_IN_IN_MILE);
-
-    // Moving average parameters
-    static constexpr uint8_t NUM_READINGS = 5;
-    static constexpr uint16_t SPEED_HOLD_TIME = 200;  // Hold last speed for 200ms before resetting
+    /*
+    Some realistic times between pulses:
+    1mph ~200,000us
+    40mph ~5,000us
+    100mph ~2,000us
+    */    
+    // WSPD_CONST = (2*pi)(microseconds per hour) / (hundredths of inches per mile) = 3569.992
+    static constexpr uint16_t WSPD_CONST = 3570;
+    static constexpr uint8_t NUM_READINGS = 4;
+    static constexpr uint32_t TIMEOUT = 5000000;
 
     volatile uint32_t lastPulseTime;
-    volatile uint8_t count;
 
-    uint16_t speedReadings[NUM_READINGS];  
+    uint32_t pulseTimes[NUM_READINGS];  
     uint8_t readIdx;
-    uint32_t speedSum;
-    uint16_t lastValidSpeed;
+    uint32_t sum;
 
 public:
-    WheelSpeed() : lastPulseTime(0), count(0), readIdx(0), speedSum(0), lastValidSpeed(0) {
-        memset(speedReadings, 0, sizeof(speedReadings));
+    WheelSpeed() : lastPulseTime(0), readIdx(0), sum(0) {
+        memset(pulseTimes, 0, sizeof(pulseTimes));
     }
     
     void intHandler() override {
         uint32_t now = micros();
+        uint32_t time = now-lastPulseTime;
+        sum = sum - pulseTimes[readIdx];
+        pulseTimes[readIdx] = time;
+        sum = sum + time;
+        readIdx = (readIdx + 1) % NUM_READINGS;
         lastPulseTime = now;
-        count++;
     }
     
     int16_t calculate() override {
-        uint32_t now = millis();
-        uint32_t diffMicros = micros() - lastPulseTime;
-        uint16_t mph_scaled = (diffMicros == 0) ? lastValidSpeed : (count * MASTER_CONST) / diffMicros;
-
-        if (count > 1) {
-            count = 0;
+        
+        if (micros() - lastPulseTime > TIMEOUT) {  
+            memset(pulseTimes, 0, sizeof(pulseTimes));
+            sum = 0;
         }
 
-        // Moving Average
-        speedSum -= speedReadings[readIdx];  
-        speedReadings[readIdx] = mph_scaled;
-        speedSum += mph_scaled;  
+        EIMSK &= ~(1 << digitalPinToInterrupt(pin));
+        uint32_t mph32 = sum == 0 ? 0 : (WSPD_CONST * ROLLING_RADIUS * 100) / (sum * SPOKES);
+        EIMSK |= (1 << digitalPinToInterrupt(pin));
 
-        readIdx = (readIdx + 1) % NUM_READINGS;  
-
-        // If no pulses but within hold time, retain last valid speed
-        if (mph_scaled > 0) {
-            lastValidSpeed = mph_scaled;
-        } else if (now - lastPulseTime >= SPEED_HOLD_TIME) {
-            lastValidSpeed = 0;  // Reset when timeout expires
-        }
-
-        int16_t avg = speedSum / NUM_READINGS;  
-        return avg;
+        uint16_t mph16 = static_cast<uint16_t>(mph32);
+        return mph16;
     }
 };
 

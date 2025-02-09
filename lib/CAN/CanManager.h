@@ -18,9 +18,9 @@ void canManagerInit(long baud) {
     memset(tx_buffer, 0, sizeof(tx_buffer));
 }
 
+// Sends an int16 along with 3 more optional int16's
 void tx(uint16_t id, const int16_t* data1, const int16_t* data2 = nullptr,
-                const int16_t* data3 = nullptr, const int16_t* data4 = nullptr) 
-{
+                const int16_t* data3 = nullptr, const int16_t* data4 = nullptr) {
     tx_msg.id.ext = id;
     memset(tx_buffer, 0, sizeof(tx_buffer));
     
@@ -33,6 +33,5 @@ void tx(uint16_t id, const int16_t* data1, const int16_t* data2 = nullptr,
     while (can_cmd(&tx_msg) != CAN_CMD_ACCEPTED);
     while (can_get_status(&tx_msg) == CAN_STATUS_NOT_COMPLETED);
 }
-
 
 #endif

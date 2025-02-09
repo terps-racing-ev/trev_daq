@@ -8,6 +8,7 @@ class PitotTube : public Sensor {
 
 private:
     static constexpr uint16_t NUM_READINGS = 20;
+    static constexpr float AIR_DENSITY = 1.225;
 
     uint16_t readings[NUM_READINGS];   // stores velocity values based on numReadings
     uint16_t readIdx;                  // index of the current reading
@@ -19,19 +20,15 @@ public:
     }
 
     int16_t calculate() override {
-        int16_t mV = analogRead(pin) * 5000 / 1023;
+        int16_t mV = map(analogRead(pin), 0, 1023, 0, 5000);
         int16_t Pa = mV - 2740;     //voltage to pressure differential conversion
  
-        float vel = sqrt(abs(2.0 * Pa / 1.225)) * 2.23694;  //find velocity in mph
+        float vel = sqrt(abs(2.0 * Pa / AIR_DENSITY)) * 2.23694;
         uint16_t vel_scaled = static_cast<uint16_t>(vel * 100);
 
-        //implement moving average
-        // Subtract the last reading from the total
         sum -= readings[readIdx];
-        // Add reading 
         readings[readIdx] = vel_scaled;
         sum += readings[readIdx];
-        // Next array position
         readIdx = (readIdx + 1) % NUM_READINGS;
 
         int16_t avg = sum / NUM_READINGS;
