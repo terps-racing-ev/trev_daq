@@ -12,12 +12,13 @@
 ## Code Structure
 - Each sensor is an object and has its own class
 - All sensors inherit the abstract class ```sensor.h```
-  - void init(pin, CAN ID, Optional interrupt function)
-  - float calculate()
-    - All sensors should call tx(pointer to data, size of data) which automatically wraps the data in the CAN struct and sends it
-    - The return is only used for the cooling board (back right)
-  - use the '''mapFloat''' utility function for analog mappings since Arduino's map only supports ints
+  - void init(pin, Optional interrupt function)
+  - int16_t calculate()
+    - Result will be scaled by some factor of 10
+    - Currently trying to optimize calculations to use ints for everything (lookup table for logarithms?)
 - Interrupts use ```EIMSK &= ~(1 << digitalPinToInterrupt(pin));``` instead of ```sei``` and ```cli``` to avoid affecting all interrupts
   - Interrupt Handlers must be static functions, so you will have to declare a static wrapper function in ```main.cpp``` that simply calls the object's interrupt handler (see wheelspeed)
+- Each board's ```main.cpp``` is responsible for calling tx(id, data1, data2(optional), data3(optional), data4(optional)
+    - Instead of canInit(500000), call canManagerInit(500000)
 
 Also, ```pins_arduino.h``` has been modified due to not being able to use the .zip file that you would normally link in Arduino. Everything works so far with the at90can128 preset platformio provides, but there may be issues/other functions that don't work.
