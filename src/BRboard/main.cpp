@@ -21,9 +21,10 @@ void setup() {
     c3.init(A2);
     c4.init(A3);
 
-    flowmeter.init(6, incflow);
+    flowmeter.init(A6, incflow);
 }
 
+// TODO
 void loop() {
     //c1.calculate();
     //c2.calculate();
