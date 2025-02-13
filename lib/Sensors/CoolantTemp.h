@@ -22,7 +22,7 @@ public:
 
         float tempC = pow((A + B * log(resistance) + C * pow(log(resistance), 3)), -1) - 273.15;
 
-        return static_cast<int16_t>(tempC * 100); // Temperature in C * 100
+        return static_cast<int16_t>(tempC * 100); // Celcius x 100
     }
 };
 

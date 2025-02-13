@@ -22,6 +22,7 @@ public:
         }
     }
 
+    int16_t readRaw() { return analogRead(pin); }
     virtual int16_t calculate() = 0;  // Sensor-specific calculation logic
 
     virtual void intHandler() {}  // Optional interrupt handling

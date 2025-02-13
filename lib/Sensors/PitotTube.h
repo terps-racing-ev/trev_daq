@@ -32,7 +32,7 @@ public:
         readIdx = (readIdx + 1) % NUM_READINGS;
 
         int16_t avg = sum / NUM_READINGS;
-        return avg; // Moving average of Velocity in MPH * 100
+        return avg; // Moving average of Velocity in MPH x 100
     }
 };
 
