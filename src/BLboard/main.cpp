@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include "CanManager.h"
-#include "BrakePressure.h"
+#include "LinearPot.h"
 #include "WheelSpeed.h"
 
-BrakePressure brBP;
-BrakePressure blBP;
+LinearPot brLP;
+LinearPot blLP;
 WheelSpeed brWSP;
 WheelSpeed blWSP;
 
@@ -15,16 +15,16 @@ void setup() {
     canManagerInit(500000);
     Serial.begin(9600);
 
-    brBP.init(A0);
-    blBP.init(A1);
+    brLP.init(A0);
+    blLP.init(A1);
     brWSP.init(6, incbrWSP);
     blWSP.init(7, incblWSP);
 }
 
 void loop() {
-    int16_t brBP_val = brBP.calculate();
-    int16_t blBP_val = blBP.calculate();
-    tx(630, &brBP_val, &blBP_val);
+    int16_t brLP_val = brLP.calculate();
+    int16_t blLP_val = blLP.calculate();
+    tx(530, &brLP_val, &blLP_val);
     int16_t brWSP_val = brWSP.calculate();
     int16_t blWSP_val = blWSP.calculate();
     tx(430, &brWSP_val, &blWSP_val);
