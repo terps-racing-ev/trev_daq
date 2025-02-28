@@ -12,6 +12,11 @@ private:
     static constexpr float C = -0.0000007045640079;
 
     static constexpr float RESISTOR_VAL = 10030.0;
+    static constexpr uint16_t NUM_READINGS = 20;
+
+    uint16_t readings[NUM_READINGS];   // stores velocity values based on numReadings
+    uint16_t readIdx;                  // index of the current reading
+    uint32_t sum;                      // sum of the last numReadings 
 
 public:
     CoolantTemp() {}
@@ -22,7 +27,15 @@ public:
 
         float tempC = pow((A + B * log(resistance) + C * pow(log(resistance), 3)), -1) - 273.15;
 
-        return static_cast<int16_t>(tempC * 100); // Celcius x 100
+        int16_t temp_scaled = static_cast<int16_t>(tempC * 100);
+        sum -= readings[readIdx];
+        readings[readIdx] = temp_scaled;
+        sum += readings[readIdx];
+        readIdx = (readIdx + 1) % NUM_READINGS;
+
+        int16_t avg = sum / NUM_READINGS;
+
+        return avg; // Celcius x 100
     }
 };
 

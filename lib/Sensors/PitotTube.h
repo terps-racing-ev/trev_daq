@@ -24,7 +24,7 @@ public:
         int16_t Pa = mV - 2740;     //voltage to pressure differential conversion
  
         float vel = sqrt(abs(2.0 * Pa / AIR_DENSITY)) * 2.23694;
-        uint16_t vel_scaled = static_cast<uint16_t>(vel * 100);
+        int16_t vel_scaled = static_cast<int16_t>(vel * 100);
 
         sum -= readings[readIdx];
         readings[readIdx] = vel_scaled;
@@ -32,7 +32,7 @@ public:
         readIdx = (readIdx + 1) % NUM_READINGS;
 
         int16_t avg = sum / NUM_READINGS;
-        return avg; // Moving average of Velocity in MPH x 100
+        return Pa; // Moving average of Velocity in MPH x 100
     }
 };
 
