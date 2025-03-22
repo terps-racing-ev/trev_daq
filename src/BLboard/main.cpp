@@ -32,6 +32,7 @@ void loop() {
 
         int16_t brLP_val = brLP.calculate();
         int16_t blLP_val = blLP.calculate();
+        Serial.println(brLP_val);
         tx(B_LP_CAN_ID, &brLP_val, &blLP_val);
 
         int16_t brWSP_val = brWSP.calculate();

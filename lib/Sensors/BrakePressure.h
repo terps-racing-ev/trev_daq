@@ -7,7 +7,7 @@
 class BrakePressure : public Sensor {
 
 private:
-    static constexpr uint16_t MIN_MV = 500; // Voltage cutoff in mV
+    static constexpr uint16_t MIN_MV = 475; // Voltage cutoff in mV
     static constexpr uint16_t MAX_MV = 4500;
     static constexpr uint16_t MIN_PSI = 0;
     static constexpr uint16_t MAX_PSI = 3000;

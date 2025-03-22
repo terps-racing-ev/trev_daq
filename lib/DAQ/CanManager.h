@@ -15,14 +15,14 @@ void canManagerInit(long baud) {
     tx_msg.pt_data = tx_buffer;
     tx_msg.ctrl.ide = MESSAGE_PROTOCOL;
     tx_msg.dlc = MESSAGE_LENGTH;
-    memset(tx_buffer, 0, sizeof(tx_buffer));
+    clearBuffer(tx_buffer);
 }
 
 // Sends an int16 along with 3 more optional int16's
 void tx(uint16_t id, const int16_t* data1, const int16_t* data2 = nullptr,
                 const int16_t* data3 = nullptr, const int16_t* data4 = nullptr) {
     tx_msg.id.ext = id;
-    memset(tx_buffer, 0, sizeof(tx_buffer));
+    clearBuffer(tx_buffer);
     
     memcpy(tx_buffer, data1, sizeof(int16_t));
     if (data2) memcpy(tx_buffer + sizeof(int16_t), data2, sizeof(int16_t));

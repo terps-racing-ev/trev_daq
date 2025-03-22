@@ -9,7 +9,7 @@ PitotTube pitot;
 SteeringAngle steering;
 
 unsigned long prevTime = 0;
-const unsigned long interval = 500;//MILLIS_IN_SEC / FR_BOARD_FREQ;
+const unsigned long interval = 50;//MILLIS_IN_SEC / FR_BOARD_FREQ;
 
 void setup() {
     canManagerInit(500000);
@@ -28,8 +28,8 @@ void loop() {
 
         int16_t backBP_val = backBP.calculate();
         tx(B_BP_CAN_ID, &backBP_val, &backBP_val);
+        Serial.println(backBP_val);
         int16_t pitot_val = pitot.calculate();
-
         tx(PITOT_CAN_ID, &pitot_val);
         int16_t steering_val = steering.calculate();
         tx(SA_CAN_ID, &steering_val);
