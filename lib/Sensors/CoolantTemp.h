@@ -11,31 +11,35 @@ private:
     static constexpr float B = 0.0005229826803;
     static constexpr float C = -0.0000007045640079;
 
-    static constexpr float RESISTOR_VAL = 10030.0;
-    static constexpr uint16_t NUM_READINGS = 20;
+    static constexpr float PULLUP_RESISTOR = 10030.0;
+    static constexpr uint8_t NUM_READINGS = 20;
 
-    uint16_t readings[NUM_READINGS];   // stores velocity values based on numReadings
-    uint16_t readIdx;                  // index of the current reading
-    uint32_t sum;                      // sum of the last numReadings 
+    // Value beyond these will output out of range temps
+    // Determined using the Steinhart equation
+    static constexpr uint16_t MIN_MV = 534; // -40C
+    static constexpr uint16_t MAX_MV = 4853; // 120C
 
 public:
     CoolantTemp() {}
 
-    int16_t calculate() override {
-        int16_t mV = map(analogRead(pin), 0, 1023, 0, 5000);
-        float resistance = mV * RESISTOR_VAL / (5000 - mV);
+    boolean calculate(void* result) override {
+        ct_type* temp_filtered = static_cast<ct_type*>(result);
+        if (temp_filtered == nullptr) return ERROR;  // Error: result pointer is null
 
-        float tempC = pow((A + B * log(resistance) + C * pow(log(resistance), 3)), -1) - 273.15;
+        uint16_t mV = map(analogRead(pin), 0, 1023, 0, 5000);
+        if (mV < MIN_MV || mV > MAX_MV) {
+            *temp_filtered = 0;
+            return ERROR; // Error: out of range
+        }
 
-        int16_t temp_scaled = static_cast<int16_t>(tempC * 100);
-        sum -= readings[readIdx];
-        readings[readIdx] = temp_scaled;
-        sum += readings[readIdx];
-        readIdx = (readIdx + 1) % NUM_READINGS;
+        float resistance = mV * PULLUP_RESISTOR / (5000 - mV);
+        float lnr = log(resistance);
+        float tempC = ( 1.0 / (A + B*lnr + C*pow(lnr, 3)) ) - 273.15;
 
-        int16_t avg = sum / NUM_READINGS;
-
-        return avg; // Celcius x 100
+        uint8_t temp_encoded = static_cast<uint16_t>((tempC + 40)); // Celcius + 40
+        MovingSum_update(&msum, temp_encoded);
+        *temp_filtered = msum.count < 0 ? msum.sum / msum.count : 0; // Moving average of temperature in Celcius + 40
+        return NO_ERROR;
     }
 };
 

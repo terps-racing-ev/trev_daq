@@ -11,9 +11,15 @@ private:
 public:
     SteeringAngle() {}
 
-    int16_t calculate() override {
-        int16_t angle = map(analogRead(pin), 0, 1023, -1800, 1799);
-        return angle; // Angle in Degrees x 10
+    boolean calculate(void* result) override {
+        sa_type* angle_filtered = static_cast<sa_type*>(result);
+        if (angle_filtered == nullptr) return ERROR;  // Error: result pointer is null
+
+        uint16_t angle = map(analogRead(pin), 0, 1023, 0, 3599);
+        MovingSum_update(&msum, angle);
+
+        *angle_filtered = msum.count < 0 ? msum.sum / msum.count : 0; // Moving average of angle in (Degrees + 180) x 10
+        return NO_ERROR;
     }
 };
 
