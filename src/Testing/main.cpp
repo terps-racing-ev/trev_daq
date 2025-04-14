@@ -30,10 +30,10 @@ void setup() {
     tx_msg.ctrl.ide = CAN_PROTOCOL;
     tx_msg.dlc = CAN_MESSAGE_SIZE;
 
-    frLP.init(FR_LP_PIN);
-    flLP.init(FL_LP_PIN);
-    frWSP.init(FR_WSP_PIN, incfrWSP);
-    flWSP.init(FL_WSP_PIN, incflWSP);
+    frLP.init(FR_LP_PIN, 10);
+    flLP.init(FL_LP_PIN, 10);
+    frWSP.init(FR_WSP_PIN, 10, incfrWSP);
+    flWSP.init(FL_WSP_PIN, 10, incflWSP);
 }
 
 void loop() {

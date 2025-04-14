@@ -8,7 +8,7 @@
 
 
 ## Uploading Code
-- In the ```platformio.ini``` file, change ```src_dir = src/FRboard``` to the name of the folder of the board you want to upload. Use the misc folder for testing
+- In the ```platformio.ini``` file, change ```src_dir = src/CoolingBoard``` to the name of the folder of the board you want to upload. Use the Testing folder for testing
 
 ## Code Structure
 - Each sensor is an object and has its own class

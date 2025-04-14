@@ -2,9 +2,10 @@
 #define FLOW_METER_H
 
 #include <Arduino.h>
-#include "Sensor.h"
+#include "DigitalSensor.h"
 
-class FlowMeter : public Sensor {
+class FlowMeter : public DigitalSensor<flow_type> {
+
 
 private:
     /*
@@ -16,48 +17,25 @@ private:
     // FLOW_CONST = (1/7.5) * (us in s) * 10x multiplier
     static constexpr uint32_t FLOW_CONST = 1333333;
 
-    static constexpr uint32_t TIMEOUT = 1000000;
+    static constexpr uint32_t TIMEOUT = 2000000;
 
-    volatile uint32_t lastPulseTime;
-    volatile uint32_t delta;
-    volatile bool newPulse;
-
-public:
-    FlowMeter() : lastPulseTime(0), delta(0), newPulse(0) {}
-
-    void intHandler() override {
-        uint32_t now = micros();
-        delta = now-lastPulseTime;
-        lastPulseTime = now;
-        newPulse = true;
+    protected:
+    // Timeout for pulse duration
+    uint32_t getTimeout() const override {
+        return TIMEOUT;
     }
 
-    boolean calculate(void* result) override {
-        flow_type* flow_rate = static_cast<flow_type*>(result);
-        if (flow_rate == nullptr) return ERROR;  // Error: result pointer is null
+public:
+    FlowMeter() {}
 
-        EIMSK &= ~(1 << digitalPinToInterrupt(pin));
+    boolean calculate(flow_type* result) override {
+        if (result == nullptr) return ERROR;  // Error: result pointer is null
 
-        // If pulse takes too long, reset moving sum to avoid keeping old values
-        if (micros() - lastPulseTime > TIMEOUT) {  
-            for(uint8_t i = 0; i < msum.num_readings; i++){
-                msum.readings[i] = 0;
-            }
-            msum.sum = 0;
-            msum.count = 0;
-        }
-        // Only update moving sum if a pulse has arrived
-        if(newPulse) {
-            MovingSum_update(&msum, delta);
-            newPulse = false;
-        }
-
-        EIMSK |= (1 << digitalPinToInterrupt(pin));
-
-        *flow_rate = msum.sum > 0 ? 
-            (uint32_t)(FLOW_CONST * msum.count) / msum.sum : 0;
-        return NO_ERROR; // Moving average of Flow rate in L/min x 10
+        // Moving average of Flow rate in L/min x 10
+        flow_type flow_rate = digital_avg.get_digital_average(FLOW_CONST);
+        *result = flow_rate;
+        return NO_ERROR;
     }
 };
 
-#endif
+#endif // FLOW_METER_H

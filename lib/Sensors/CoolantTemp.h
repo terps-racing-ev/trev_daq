@@ -2,9 +2,9 @@
 #define COOLANT_TEMP_H
 
 #include <Arduino.h>
-#include "Sensor.h"
+#include "AnalogSensor.h"
 
-class CoolantTemp : public Sensor {
+class CoolantTemp : public AnalogSensor<ct_type> {
 private:
     // Stienhart Equation Constants, see matlab file to adjust
     static constexpr float A = -0.0009123445192;
@@ -22,25 +22,25 @@ private:
 public:
     CoolantTemp() {}
 
-    boolean calculate(void* result) override {
-        ct_type* temp_filtered = static_cast<ct_type*>(result);
-        if (temp_filtered == nullptr) return ERROR;  // Error: result pointer is null
+    boolean calculate(ct_type* result) override {
+        if (result == nullptr) return ERROR;  // Error: result pointer is null
 
-        uint16_t mV = map(analogRead(pin), 0, 1023, 0, 5000);
+        uint16_t filtered_adc = analog_avg.get_analog_average();
+        uint16_t mV = map(filtered_adc, 0, 1023, 0, 5000);
         if (mV < MIN_MV || mV > MAX_MV) {
-            *temp_filtered = 0;
+            *result = 0;
             return ERROR; // Error: out of range
         }
 
         float resistance = mV * PULLUP_RESISTOR / (5000 - mV);
         float lnr = log(resistance);
         float tempC = ( 1.0 / (A + B*lnr + C*pow(lnr, 3)) ) - 273.15;
-
-        uint8_t temp_encoded = static_cast<uint16_t>((tempC + 40)); // Celcius + 40
-        MovingSum_update(&msum, temp_encoded);
-        *temp_filtered = msum.count < 0 ? msum.sum / msum.count : 0; // Moving average of temperature in Celcius + 40
+    
+        // Moving average of temperature in Celcius
+        ct_type temp = static_cast<ct_type>(tempC);
+        *result = temp;
         return NO_ERROR;
     }
 };
 
-#endif
+#endif // COOLANT_TEMP_H

@@ -2,9 +2,9 @@
 #define BRAKE_PRESSURE_H
 
 #include <Arduino.h>
-#include "Sensor.h"
+#include "AnalogSensor.h"
 
-class BrakePressure : public Sensor {
+class BrakePressure : public AnalogSensor<bp_type> {
 
 private:
     static constexpr uint16_t MIN_MV = 500;
@@ -15,22 +15,21 @@ private:
 public:
     BrakePressure() {};
     
-    boolean calculate(void* result) override {
-        bp_type* psi_filtered = static_cast<bp_type*>(result);
-        if (psi_filtered == nullptr) return ERROR;  // Error: result pointer is null
+    boolean calculate(bp_type* result) override {
+        if (result == nullptr) return ERROR;  // Error: result pointer is null
 
-        uint16_t mV = map(analogRead(pin), 0, 1023, 0, 5000);
+        uint16_t filtered_adc = analog_avg.get_analog_average();
+        uint16_t mV = map(filtered_adc, 0, 1023, 0, 5000);
         if (mV < MIN_MV || mV > MAX_MV) {
-            *psi_filtered = 0;
+            *result = 0;
             return ERROR; // Error: out of range
         }
 
-        // Pressure in PSI
+        // Moving Average of Pressure in PSI
         bp_type psi = map(mV, MIN_MV, MAX_MV, MIN_PSI, MAX_PSI);
-        MovingSum_update(&msum, psi);
-        *psi_filtered = msum.count < 0 ? msum.sum / msum.count : 0; // Moving average of pressure in PSI
+        *result = psi;
         return NO_ERROR;
     }
 };
 
-#endif
+#endif // BRAKE_PRESSURE_H
