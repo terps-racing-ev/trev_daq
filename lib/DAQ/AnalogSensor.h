@@ -24,7 +24,7 @@ public:
     }
 
     /*
-        Updates the moving average with the latest pulse duration
+        Updates the moving average with the latest adc reading
     */
     void update() {
         uint16_t new_sample = analogRead(pin);
@@ -33,7 +33,7 @@ public:
 
     /*  
         Sensor-sepcific calculation logic 
-        Returns 1 for success, 0 for error
+        Returns success/error
         Make sure to use the correct sensor type defined in SensorTypes.h
     */
     virtual bool calculate(SensorType* result) = 0;
