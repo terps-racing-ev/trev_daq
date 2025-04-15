@@ -62,6 +62,8 @@ void setup() {
     flLP.init(FL_LP_PIN, 10);
     frWSP.init(FR_WSP_PIN, 10, incfrWSP);
     flWSP.init(FL_WSP_PIN, 10, incflWSP);
+
+    can_message_rx(&msg_rx);
 }
 
 void loop() {
@@ -88,7 +90,7 @@ void loop() {
         if (rx_has_data) {
             // Do calculations (stored in rx_buffer)
             wsp_type brWSP_val = rx_buffer[4] + (rx_buffer[5] << 8);
-            wsp_type blWSP_val = rx_buffer[6] + (rx_buffer[7] << 8)
+            wsp_type blWSP_val = rx_buffer[6] + (rx_buffer[7] << 8);
 
             std::array<wsp_type, 4> nums = {brWSP_val, blWSP_val, flWSP_val, frWSP_val};
             std::sort(nums.begin(), nums.end());
@@ -97,6 +99,10 @@ void loop() {
             tx_buffer[0] = average_val & 0xFF; // Low byte
             tx_buffer[1] = (average_val >> 8) & 0xFF; // High byte
             can_manager_tx(AVERAGE_WSP_CAN_ID, tx_buffer);
+
+            can_manager_rx(&msg_rx);
+
+            rx_has_data = false;
         }
 
         clearBuffer(tx_buffer);
