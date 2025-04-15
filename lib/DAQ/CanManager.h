@@ -19,4 +19,16 @@ void can_manager_tx(uint16_t can_id, uint8_t* data) {
     while (can_get_status(&msg) == CAN_STATUS_NOT_COMPLETED);
 }
 
+void setup_can_rx(st_cmd_t* msg, uint16_t can_id, uint8_t* data){
+    msg->id.std = can_id;
+    msg->pt_data = data;
+    msg->ctrl.ide = CAN_PROTOCOL;
+    msg->dlc = CAN_MESSAGE_SIZE;
+    msg->cmd = CMD_RX_DATA;
+}
+
+void can_manager_rx(st_cmd_t* msg) {
+    while (can_cmd(msg) != CAN_CMD_ACCEPTED);
+}
+
 #endif // CAN_MANAGER_H

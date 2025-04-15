@@ -12,6 +12,12 @@
 #define FR_BOARD_UPDT_FREQ 100
 #define FR_BOARD_TX_FREQ   50
 
+/* Back Right Board */
+#define BR_BOARD_CAN_ID 0xB1
+
+/* Average WSP data */
+#define AVERAGE_WSP_CAN_ID 0xFF // fix
+
 #define FR_BOARD_UPDT_PERIOD (MILLIS_IN_SEC / FR_BOARD_UPDT_FREQ)
 #define FR_BOARD_TX_PERIOD (MILLIS_IN_SEC / FR_BOARD_TX_FREQ)
 
@@ -35,9 +41,15 @@ wsp_type frWSP_val;
 wsp_type flWSP_val;
 
 uint8_t tx_buffer[CAN_MESSAGE_SIZE];
+uint8_t rx_buffer[CAN_MESSAGE_SIZE];
 
 unsigned long prev_updt_time = 0;
 unsigned long prev_tx_time = 0;
+
+st_cmd_t msg_rx;    // Reading CAN message from BR board
+setup_can_rx(&msg_rx, BR_BOARD_CAN_ID, rx_buffer);   // Setting up that shi
+
+bool rx_has_data = false;    // Reading CAN message
 
 void setup() {
     canInit(CAN_BAUD_RATE);
@@ -55,6 +67,11 @@ void setup() {
 void loop() {
     unsigned long currTime = millis();
 
+    // If reading, then check if the can message has been received.
+    if (!rx_has_data) {
+        rx_has_data = (can_get_status(&msg) != CAN_STATUS_NOT_COMPLETED);
+    }
+
     if (currTime - prev_updt_time >= FR_BOARD_UPDT_PERIOD) {
         prev_updt_time = currTime;
 
@@ -65,6 +82,22 @@ void loop() {
     }
     if (currTime - prev_tx_time >= FR_BOARD_TX_PERIOD) {
         prev_tx_time = currTime;
+
+        clearBuffer(tx_buffer);
+
+        if (rx_has_data) {
+            // Do calculations (stored in rx_buffer)
+            wsp_type brWSP_val = rx_buffer[4] + (rx_buffer[5] << 8);
+            wsp_type blWSP_val = rx_buffer[6] + (rx_buffer[7] << 8)
+
+            std::array<wsp_type, 4> nums = {brWSP_val, blWSP_val, flWSP_val, frWSP_val};
+            std::sort(nums.begin(), nums.end());
+            wsp_type average = (wsp_type) ((nums[1] + nums[2])/2.0);
+
+            tx_buffer[0] = average_val & 0xFF; // Low byte
+            tx_buffer[1] = (average_val >> 8) & 0xFF; // High byte
+            can_manager_tx(AVERAGE_WSP_CAN_ID, tx_buffer);
+        }
 
         clearBuffer(tx_buffer);
 
