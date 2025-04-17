@@ -92,8 +92,17 @@ void loop() {
             wsp_type brWSP_val = rx_buffer[4] + (rx_buffer[5] << 8);
             wsp_type blWSP_val = rx_buffer[6] + (rx_buffer[7] << 8);
 
-            std::array<wsp_type, 4> nums = {brWSP_val, blWSP_val, flWSP_val, frWSP_val};
-            std::sort(nums.begin(), nums.end());
+            wsp_type nums[4] = [brWSP_val, blWSP_val, flWSP_val, frWSP_val];
+
+            for (int i=0; i<4; i++) {
+                for (int j=0; j<4-i; j++) {
+                    if (nums[i] < nums[j]) {
+                        wsp_type temp = nums[i];
+                        nums[i] = nums[j];
+                        nums[j] = temp;
+                    }
+                }
+            }
             wsp_type average = (wsp_type) ((nums[1] + nums[2])/2.0);
 
             tx_buffer[0] = average_val & 0xFF; // Low byte
