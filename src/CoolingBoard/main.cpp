@@ -4,7 +4,7 @@
 #include "CoolantTemp.h"
 #include "FlowMeter.h"
 
-//#define DEBUG_SERIAL
+#define DEBUG_SERIAL
 #define MILLIS_IN_SEC   1000
 
 /* Cooling Board */
@@ -17,7 +17,7 @@
 
 #define NUM_CT_SENSORS  4
 #define BASE_CT_PIN     A0
-#define FLOW_PIN        6
+#define FLOW_PIN        7
 
 #define PWM_PIN         5
 
@@ -67,6 +67,9 @@ void loop() {
         ct_type maxTemp = -40;
 
         for (uint8_t i = 0; i < NUM_CT_SENSORS; i++) {
+            temps[i].update();
+        }
+        for (uint8_t i = 0; i < NUM_CT_SENSORS; i++) {
             if (temps[i].calculate(&temp_vals[i]) == NO_ERROR) {
                 if (temp_vals[i] > maxTemp) {
                     maxTemp = static_cast<uint16_t>(temp_vals[i]) - 40;
@@ -79,17 +82,6 @@ void loop() {
 
         uint8_t pwm_val = getFanSpeed(maxTemp - 40);
         analogWrite(PWM_PIN, pwm_val);
-        
-        #ifdef DEBUG_SERIAL
-        Serial.print(pwm_val);
-        Serial.print(", ");
-        Serial.print(flow_val / 10.0f);
-        for (uint8_t i = 0; i < NUM_CT_SENSORS; i++) {
-            Serial.print(", ");
-            Serial.print(temp_vals[i] - 40);
-        }
-        Serial.println("");
-        #endif
     }
 
     if (currTime - prev_tx_time >= COOLING_BOARD_TX_PERIOD) {
@@ -103,7 +95,23 @@ void loop() {
         if (flowmeter.calculate(&flow_val) == NO_ERROR) {
             tx_buffer[6] = flow_val & 0xFF; // Low byte
             tx_buffer[7] = (flow_val >> 8) & 0xFF; // High byte
+        } else {
+            Serial.println("FLOW_ERROR");
         }
+
+        can_manager_tx(COOLING_CAN_ID, tx_buffer);
+
+        #ifdef DEBUG_SERIAL
+        Serial.print("FAKE");
+        Serial.print(", ");
+        Serial.print(flow_val / 10.0f);
+        for (uint8_t i = 0; i < NUM_CT_SENSORS; i++) {
+            Serial.print(", ");
+            //Serial.print(analogRead(BASE_CT_PIN + i));
+            Serial.print(temp_vals[i]);
+        }
+        Serial.println("");
+        #endif
     }
 }
 
