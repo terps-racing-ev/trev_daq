@@ -23,8 +23,8 @@
 
 #define MAP_RES 7 // Number of temp to fan speed mappings
 
-const ct_type tempPoints[MAP_RES] = {10,  22,  27,  30,  35,  45,  50};
-const uint8_t fanSpeeds[MAP_RES] =  { 0,   0,  64, 128, 192, 255, 255};
+const ct_type tempPoints[MAP_RES] = {17,  22,  27,  30,  35,  45,  50};
+const uint8_t fanSpeeds[MAP_RES] =  { 64, 64, 100, 128, 192, 255, 255};
 
 CoolantTemp temps[NUM_CT_SENSORS];
 FlowMeter flowmeter;
