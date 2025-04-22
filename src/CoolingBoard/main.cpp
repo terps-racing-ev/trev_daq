@@ -40,6 +40,7 @@ unsigned long prev_updt_time = 0;
 unsigned long prev_tx_time = 0;
 
 uint8_t getFanSpeed(int8_t currTemp);
+uint8_t pwm_val;
 
 void setup() {
     canInit(CAN_BAUD_RATE);
@@ -80,7 +81,7 @@ void loop() {
         }
         flowmeter.update();
 
-        uint8_t pwm_val = getFanSpeed(maxTemp - 40);
+        pwm_val = getFanSpeed(maxTemp - 40);
         analogWrite(PWM_PIN, pwm_val);
     }
 
@@ -92,6 +93,10 @@ void loop() {
                 tx_buffer[i] = temp_vals[i];
             }
         }
+        
+        // TODO: not sure how to check that pwm is correct
+        tx_buffer[4] = pwm_val;
+
         if (flowmeter.calculate(&flow_val) == NO_ERROR) {
             tx_buffer[6] = flow_val & 0xFF; // Low byte
             tx_buffer[7] = (flow_val >> 8) & 0xFF; // High byte
