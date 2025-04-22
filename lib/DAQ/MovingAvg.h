@@ -37,7 +37,9 @@ public:
     }
 
     void reset() {
-        for (size_t i = 0; i < N; ++i) buffer[i] = 0;
+        for (size_t i = 0; i < N; i++) {
+            buffer[i] = 0;
+        }
         sum = 0;
         index = 0;
     }

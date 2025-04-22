@@ -57,7 +57,7 @@ public:
 
     /*  
         Sensor-sepcific calculation logic 
-        Returns 1 for success, 0 for error
+        Returns success/error
         Make sure to use the correct sensor type defined in SensorTypes.h
     */
     virtual bool calculate(SensorType* result) = 0;
