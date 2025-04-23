@@ -3,6 +3,7 @@
 #include "CanManager.h"
 #include "CoolantTemp.h"
 #include "FlowMeter.h"
+#include "BrakePressure.h"
 
 #define DEBUG_SERIAL
 #define MILLIS_IN_SEC   1000
@@ -73,7 +74,7 @@ void loop() {
         for (uint8_t i = 0; i < NUM_CT_SENSORS; i++) {
             if (temps[i].calculate(&temp_vals[i]) == NO_ERROR) {
                 if (temp_vals[i] > maxTemp) {
-                    maxTemp = static_cast<uint16_t>(temp_vals[i]) - 40;
+                    maxTemp = static_cast<uint16_t>(temp_vals[i]);
                 }
             } else {
                 maxTemp = 255; // Assume max temp if a sensor errors
@@ -81,7 +82,7 @@ void loop() {
         }
         flowmeter.update();
 
-        pwm_val = getFanSpeed(maxTemp - 40);
+        pwm_val = getFanSpeed(maxTemp);
         analogWrite(PWM_PIN, pwm_val);
     }
 
@@ -107,7 +108,7 @@ void loop() {
         can_manager_tx(COOLING_CAN_ID, tx_buffer);
 
         #ifdef DEBUG_SERIAL
-        Serial.print("FAKE");
+        Serial.print(pwm_val);
         Serial.print(", ");
         Serial.print(flow_val / 10.0f);
         for (uint8_t i = 0; i < NUM_CT_SENSORS; i++) {
@@ -140,6 +141,8 @@ uint8_t getFanSpeed(ct_type currTemp) {
     if (currTemp >= tempPoints[MAP_RES - 1]) {
       speed = fanSpeeds[MAP_RES - 1];
     }
+
+
 
     return constrain(speed, 0, 255);  // Clamp to 0-255
 }
