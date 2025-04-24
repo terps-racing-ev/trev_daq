@@ -25,13 +25,13 @@ public:
     boolean calculate(ct_type* result) override {
         if (result == nullptr) return ERROR;  // Error: result pointer is null
 
-        uint16_t filtered_adc = analogRead(pin);//analog_avg.get_analog_average();
+        uint16_t filtered_adc = analog_avg.get_analog_average();
         uint16_t mV = map(filtered_adc, 0, 1023, 0, 5000);
         if (mV < MIN_MV || mV > MAX_MV) {
             *result = 0;
             return ERROR; // Error: out of range
         }
-
+    
         float resistance = mV * PULLUP_RESISTOR / (5000 - mV);
         float lnr = log(resistance);
         float tempC = ( 1.0 / (A + B*lnr + C*pow(lnr, 3)) ) - 273.15;

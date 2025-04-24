@@ -30,6 +30,7 @@ public:
     virtual void init(uint8_t pin_num, uint8_t num_readings, void (*intFun)() = nullptr) {
         pin = pin_num;
         pinMode(pin, INPUT);
+        digital_avg.reset();
 
         if (intFun) {
             interruptFun = intFun;
