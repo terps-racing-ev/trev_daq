@@ -5,9 +5,10 @@
 
 template<typename T, size_t N>
 class MovingAvg {
-    T buffer[N] = {};
-    T sum = 0;
+    T buffer[N] = {0};
+    uint32_t sum = 0;
     size_t index = 0;
+    bool full = FALSE;
 
 public:
     // General update: add new sample to buffer
@@ -17,13 +18,17 @@ public:
         sum += new_sample;
 
         index = (index + 1) % N;
+        if (index == 0) {
+            full = TRUE; // Buffer is full after first N samples
+        }
     }
 
     /*
         Analog average: sum / N
     */ 
     T get_analog_average() const {
-        return N ? ((T)(sum / N)) : 0;
+
+        return N ? (full ? ((T)(sum / N)) : ((T)(sum/index + 1))) : (T)0;
     }
 
     /*
@@ -33,7 +38,7 @@ public:
         Use stoichiometry to determine the correct scale constant for your sensor.
     */
     T get_digital_average(uint32_t scaleConst) const {
-        return (sum == 0 || N == 0) ? ((T)0) : ((T)((scaleConst * N) / sum));
+        return (sum == 0 || N == 0) ? ((T)0) : (full ? (T)((scaleConst * N) / sum) : (T)((scaleConst * index + 1) / sum));
     }
 
     void reset() {

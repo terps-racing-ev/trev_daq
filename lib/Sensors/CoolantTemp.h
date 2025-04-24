@@ -31,7 +31,7 @@ public:
             *result = 0;
             return ERROR; // Error: out of range
         }
-
+    
         float resistance = mV * PULLUP_RESISTOR / (5000 - mV);
         float lnr = log(resistance);
         float tempC = ( 1.0 / (A + B*lnr + C*pow(lnr, 3)) ) - 273.15;

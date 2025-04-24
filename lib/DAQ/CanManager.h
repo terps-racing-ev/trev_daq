@@ -1,7 +1,7 @@
 #ifndef CAN_MANAGER_H
 #define CAN_MANAGER_H
 
-#define CAN_BAUD_RATE 250000
+#define CAN_BAUD_RATE 500000
 #define CAN_PROTOCOL 0
 #define CAN_MESSAGE_SIZE 8
 
