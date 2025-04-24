@@ -33,7 +33,7 @@ public:
         Use stoichiometry to determine the correct scale constant for your sensor.
     */
     T get_digital_average(uint32_t scaleConst) const {
-        return (sum == 0 || N == 0) ? 0 : (scaleConst * N) / sum;
+        return (sum == 0 || N == 0) ? ((T)0) : ((T)((scaleConst * N) / sum));
     }
 
     void reset() {
