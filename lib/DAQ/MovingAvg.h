@@ -23,7 +23,7 @@ public:
         Analog average: sum / N
     */ 
     T get_analog_average() const {
-        return N ? (sum / N) : 0;
+        return N ? ((T)(sum / N)) : 0;
     }
 
     /*
