@@ -1,68 +1,80 @@
-#include "BoardConfig.h"
-#include "LinearPot.h"
-#include "WheelSpeed.h"
+/*
+ * CAN port receiver example
+ * Receives data on the CAN buss and prints to the serial port
+ */
 
-LinearPot frLP;
-LinearPot flLP;
-WheelSpeed frWSP;
-WheelSpeed flWSP;
+#include <ASTCanLib.h>              
 
-void incfrWSP() { frWSP.intHandler(); }
-void incflWSP() { flWSP.intHandler(); }
+#define MESSAGE_ID        0       // Message ID
+#define MESSAGE_PROTOCOL  1       // CAN protocol (0: CAN 2.0A, 1: CAN 2.0B)
+#define MESSAGE_LENGTH    8       // Data length: 8 bytes
+#define MESSAGE_RTR       0       // rtr bit
 
-lp_type frLP_val;
-lp_type flLP_val;
-wsp_type frWSP_val;
-wsp_type flWSP_val;
+// Function prototypes
+void serialPrintData(st_cmd_t *msg);
 
-st_cmd_t tx_msg;
-uint8_t tx_buffer[CAN_MESSAGE_SIZE];
+// CAN message object
+st_cmd_t Msg;
 
-unsigned long prevTime = 0;
-const unsigned long interval = MILLIS_IN_SEC / FL_BOARD_FREQ;
+// Buffer for CAN data
+uint8_t Buffer[8] = {};
 
 void setup() {
-    canInit(CAN_BAUD_RATE);
-    Serial.begin(9600);
-
-    tx_msg.id.std = FL_BOARD_CAN_ID;
-    tx_msg.pt_data = tx_buffer;
-    tx_msg.ctrl.ide = CAN_PROTOCOL;
-    tx_msg.dlc = CAN_MESSAGE_SIZE;
-
-    frLP.init(FR_LP_PIN, 10);
-    flLP.init(FL_LP_PIN, 10);
-    frWSP.init(FR_WSP_PIN, 10, incfrWSP);
-    flWSP.init(FL_WSP_PIN, 10, incflWSP);
+  canInit(500000);            // Initialise CAN port. must be before Serial.begin
+  Serial.begin(1000000);       // start serial port
+  Msg.pt_data = &Buffer[0];    // reference message data to buffer
+  
+  // Initialise CAN packet.
+  // All of these will be overwritten by a received packet
+  Msg.ctrl.ide = MESSAGE_PROTOCOL;  // Set CAN protocol (0: CAN 2.0A, 1: CAN 2.0B)
+  Msg.id.ext   = MESSAGE_ID;        // Set message ID
+  Msg.dlc      = MESSAGE_LENGTH;    // Data length: 8 bytes
+  Msg.ctrl.rtr = MESSAGE_RTR;       // Set rtr bit
 }
 
 void loop() {
-    unsigned long currTime = millis();
+  // Clear the message buffer
+  clearBuffer(&Buffer[0]);
+  
+  // Send command to the CAN port controller
+  Msg.cmd = CMD_RX_DATA;
+  
+  // Wait for the command to be accepted by the controller
+  while(can_cmd(&Msg) != CAN_CMD_ACCEPTED);
+  // Wait for command to finish executing
+  while(can_get_status(&Msg) == CAN_STATUS_NOT_COMPLETED);
+  // Data is now available in the message object
+  // Print received data to the terminal
+  serialPrintData(&Msg);
+}
 
-    if (currTime - prevTime >= interval) {
-        prevTime = currTime;
-
-        clearBuffer(tx_buffer);
-
-        if(frLP.calculate(&frLP_val) == NO_ERROR) {
-            tx_buffer[0] = frLP_val & 0xFF; // Low byte
-            tx_buffer[1] = (frLP_val >> 8) & 0xFF; // High byte
-        }
-        if(flLP.calculate(&flLP_val) == NO_ERROR) {
-            tx_buffer[2] = flLP_val & 0xFF; // Low byte
-            tx_buffer[3] = (flLP_val >> 8) & 0xFF; // High byte
-        }
-        if(frWSP.calculate(&frWSP_val) == NO_ERROR) {
-            tx_buffer[4] = frWSP_val & 0xFF; // Low byte
-            tx_buffer[5] = (frWSP_val >> 8) & 0xFF; // High byte
-        }
-        if(flWSP.calculate(&flWSP_val) == NO_ERROR) {
-            tx_buffer[6] = flWSP_val & 0xFF; // Low byte
-            tx_buffer[7] = (flWSP_val >> 8) & 0xFF; // High byte
-        }
-
-        tx_msg.cmd = CMD_TX_DATA;
-        while (can_cmd(&tx_msg) != CAN_CMD_ACCEPTED);
-        while (can_get_status(&tx_msg) == CAN_STATUS_NOT_COMPLETED);
-    }
+void serialPrintData(st_cmd_t *msg){
+  char textBuffer[50] = {0};
+  if (msg->ctrl.ide>0){
+    sprintf(textBuffer,"id %d ",msg->id.ext);
+  }
+  else
+  {
+    sprintf(textBuffer,"id %04x ",msg->id.std);
+  }
+  Serial.print(textBuffer);
+  
+  //  IDE
+  sprintf(textBuffer,"ide %d ",msg->ctrl.ide);
+  Serial.print(textBuffer);
+  //  RTR
+  sprintf(textBuffer,"rtr %d ",msg->ctrl.rtr);
+  Serial.print(textBuffer);
+  //  DLC
+  sprintf(textBuffer,"dlc %d ",msg->dlc);
+  Serial.print(textBuffer);
+  //  Data
+  sprintf(textBuffer,"data ");
+  Serial.print(textBuffer);
+  
+  for (int i =0; i<msg->dlc; i++){
+    sprintf(textBuffer,"%02X ",msg->pt_data[i]);
+    Serial.print(textBuffer);
+  }
+  Serial.print("\r\n");
 }
