@@ -26,6 +26,7 @@ SteeringAngle steering;
 
 bp_type backBP_val;
 pitot_type pitot_val;
+uint16_t pitot_raw;
 sa_type steering_val;
 
 uint8_t tx_buffer[CAN_MESSAGE_SIZE];
@@ -76,9 +77,13 @@ void loop() {
             tx_buffer[2] = pitot_val & 0xFF; // Low byte
             tx_buffer[3] = (pitot_val >> 8) & 0xFF; // High byte
         }
+        if(pitot.raw_reading(&pitot_raw) == NO_ERROR) {
+            tx_buffer[4] = pitot_raw & 0xFF; // Low byte
+            tx_buffer[5] = (pitot_raw >> 8) & 0xFF; // High byte
+        }
         if(steering.calculate(&steering_val) == NO_ERROR) {
-            tx_buffer[4] = steering_val & 0xFF; // Low byte
-            tx_buffer[5] = (steering_val >> 8) & 0xFF; // High byte
+            tx_buffer[6] = steering_val & 0xFF; // Low byte
+            tx_buffer[7] = (steering_val >> 8) & 0xFF; // High byte
         }
 
         can_manager_tx(FL_BOARD_CAN_ID, tx_buffer);

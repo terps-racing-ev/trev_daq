@@ -8,18 +8,36 @@ class PitotTube : public AnalogSensor<pitot_type> {
 
 private:
     static constexpr float AIR_DENSITY = 1.225;
+    static constexpr uint16_t CALIBRATION_READINGS = 100; // 2 seconds, check calculate freq
+    uint32_t calibration_sum;
+    uint16_t calibration_cnt;
+    uint16_t zero_point;
 
 public:
-    PitotTube() { }
+    PitotTube() {
+        calibration_sum = 0;
+        calibration_cnt = 0;
+    }
 
     boolean calculate(pitot_type* result) override {
         if (result == nullptr) return ERROR;  // Error: result pointer is null
 
-        uint16_t filtered_adc = analog_avg.get_analog_average();
-        uint16_t mV = map(filtered_adc, 0, 1023, 0, 5000);
+        if (calibration_cnt < CALIBRATION_READINGS) {
+            calibration_sum += analogRead(pin);
+            calibration_cnt++;
+            *result = 0;
+            return NO_ERROR;
+        } else if (calibration_cnt == CALIBRATION_READINGS) {
+            calibration_cnt++;
+            zero_point = calibration_sum / CALIBRATION_READINGS;
+        }
 
-        int16_t Pa = mV - 2740; //voltage to pressure differential conversion
-        float vel = sqrt(abs(2.0 * Pa / AIR_DENSITY)) * 2.23694;
+        uint16_t filtered_adc = analog_avg.get_analog_average();
+
+        float mV = filtered_adc * (5000.0/1023.0);
+        float zero_mV = zero_point * (5000.0/1023.0);
+        float Pa = mV - zero_mV;
+        float vel = sqrt(abs( 2*(Pa) / AIR_DENSITY )) * 2.8;  //find velocity in mph
         
         // Moving average of Velocity in MPH x 100
         pitot_type vel_scaled = static_cast<pitot_type>(vel * 100);

@@ -38,6 +38,12 @@ public:
     */
     virtual bool calculate(SensorType* result) = 0;
 
+    bool raw_reading(uint16_t* result) {
+        if (result == nullptr) return ERROR;  // Error: result pointer is null
+        *result = analog_avg.get_analog_average();
+        return NO_ERROR;
+    }
+
 };
 
 #endif // ANALOG_SENSOR_H
