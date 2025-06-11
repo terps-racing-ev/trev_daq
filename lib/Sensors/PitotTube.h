@@ -34,10 +34,9 @@ public:
 
         uint16_t filtered_adc = analog_avg.get_analog_average();
 
-        float mV = filtered_adc * (5000.0/1023.0);
-        float zero_mV = zero_point * (5000.0/1023.0);
-        float Pa = mV - zero_mV;
-        float vel = sqrt(abs( 2*(Pa) / AIR_DENSITY )) * 2.8;  //find velocity in mph
+        int16_t adc_offset = filtered_adc - zero_point;
+        float mv_offset = adc_offset * (5000.0/1023.0); // 1 to 1 with Pa theoretically
+        float vel = sqrt(abs( 2*(mv_offset) / AIR_DENSITY )) * 2.8;  //find velocity in mph
         
         // Moving average of Velocity in MPH x 100
         pitot_type vel_scaled = static_cast<pitot_type>(vel * 100);
