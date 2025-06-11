@@ -28,7 +28,7 @@ public:
     */ 
     T get_analog_average() const {
 
-        return N ? (full ? ((T)(sum / N)) : ((T)(sum/index + 1))) : (T)0;
+        return (N == 0) ? ((T)0) : ( full ? ((T)(sum / N)) : ((T)(sum/(index + 1))) );
     }
 
     /*
@@ -38,7 +38,7 @@ public:
         Use stoichiometry to determine the correct scale constant for your sensor.
     */
     T get_digital_average(uint32_t scaleConst) const {
-        return (sum == 0 || N == 0) ? ((T)0) : (full ? (T)((scaleConst * N) / sum) : (T)((scaleConst * index + 1) / sum));
+        return (sum == 0 || N == 0) ? ((T)0) : (full ? (T)((scaleConst * N) / sum) : (T)((scaleConst * (index + 1)) / sum));
     }
 
     void reset() {
@@ -47,6 +47,7 @@ public:
         }
         sum = 0;
         index = 0;
+        full = FALSE;
     }
 };
 
