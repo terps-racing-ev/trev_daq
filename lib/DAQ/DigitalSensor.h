@@ -46,9 +46,9 @@ public:
     */
     void update() {
         // If pulse takes too long, reset moving avg to avoid keeping old values
-        if (micros() - lastPulseTime > getTimeout()) {  
-            digital_avg.reset();
-        }
+        //if (micros() - lastPulseTime > getTimeout()) {  
+        //    digital_avg.reset();
+        //}
         // Only update moving sum if a pulse has arrived
         if(newPulse) {
             digital_avg.update(delta);
