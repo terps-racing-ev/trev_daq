@@ -13,7 +13,7 @@ template<typename SensorType>
 class AnalogSensor {
 protected:
     uint8_t pin;
-    MovingAvg<uint16_t, 128> analog_avg;
+    MovingAvg<uint16_t, 8> analog_avg;
 
 public:
     AnalogSensor() : pin(0) {}

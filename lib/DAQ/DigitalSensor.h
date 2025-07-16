@@ -15,17 +15,18 @@ template<typename SensorType>
 class DigitalSensor {
 protected:
     uint8_t pin;
-    MovingAvg<uint32_t, 64> digital_avg;
+    MovingAvg<uint32_t, 4> digital_avg;
 
     void (*interruptFun)();
     volatile uint32_t lastPulseTime;
     volatile uint32_t delta;
     volatile bool newPulse;
+    volatile uint32_t ticks;
 
     virtual uint32_t getTimeout() const = 0;
 
 public:
-    DigitalSensor() : pin(0), interruptFun(nullptr), lastPulseTime(0), delta(0), newPulse(false) {}
+    DigitalSensor() : pin(0), interruptFun(nullptr), lastPulseTime(0), delta(0), newPulse(false), ticks(0) {}
 
     virtual void init(uint8_t pin_num, uint8_t num_readings, void (*intFun)() = nullptr) {
         pin = pin_num;
@@ -68,6 +69,7 @@ public:
         delta = now-lastPulseTime;
         lastPulseTime = now;
         newPulse = true;
+        ticks++;
     }
 
 };

@@ -36,7 +36,10 @@ protected:
 public:
     WheelSpeed() {}
     
-    
+    uint32_t getTicks() {
+        return ticks;
+    }
+
     boolean calculate(wsp_type* result) override {
         if (result == nullptr) return ERROR;  // Error: result pointer is null
 
